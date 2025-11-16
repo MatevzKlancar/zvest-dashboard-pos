@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   BarChart3,
+  Bell,
   ChevronDown,
   LayoutDashboard,
   LogOut,
@@ -84,6 +85,11 @@ const getNavigationItems = (userType?: string) => {
       name: "Customers",
       href: "/customers",
       icon: Users,
+    },
+    {
+      name: "Notifications",
+      href: "/notifications",
+      icon: Bell,
     },
     {
       name: "Analytics",

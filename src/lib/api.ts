@@ -10,6 +10,13 @@ import {
   TransactionsResponse,
   InvitationData,
   Article,
+  BroadcastNotificationData,
+  BroadcastNotificationResponse,
+  BirthdayTemplateData,
+  BirthdayTemplateResponse,
+  NotificationHistory,
+  NotificationHistoryFilters,
+  NotificationAnalytics,
 } from "./types";
 
 class ApiClient {
@@ -298,26 +305,6 @@ class ApiClient {
     return 'data' in result ? result.data : result;
   }
 
-  async getArticles(params?: {
-    active_only?: boolean;
-    category?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<Record<string, unknown>> {
-    const query = new URLSearchParams();
-    if (params?.active_only !== undefined)
-      query.set("active_only", params.active_only.toString());
-    if (params?.category) query.set("category", params.category);
-    if (params?.limit) query.set("limit", params.limit.toString());
-    if (params?.offset) query.set("offset", params.offset.toString());
-    const queryString = query.toString() ? `?${query.toString()}` : "";
-
-    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>(
-      `/api/shop-admin/articles${queryString}`
-    );
-    return 'data' in result ? result.data : result;
-  }
-
   async getTransactions(
     params?: TransactionFilters
   ): Promise<TransactionsResponse> {
@@ -385,6 +372,49 @@ class ApiClient {
       `/api/shop-admin/articles${queryString}`
     );
     // Extract the actual article data from the wrapper
+    return 'data' in result ? result.data : result;
+  }
+
+  // ===========================
+  // NOTIFICATION ENDPOINTS
+  // ===========================
+
+  async sendBroadcastNotification(data: BroadcastNotificationData): Promise<BroadcastNotificationResponse> {
+    return this.request("/api/shop-admin/notifications/broadcast", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getBirthdayTemplate(): Promise<BirthdayTemplateResponse> {
+    return this.request("/api/shop-admin/notifications/birthday-template");
+  }
+
+  async saveBirthdayTemplate(data: BirthdayTemplateData): Promise<BirthdayTemplateResponse> {
+    return this.request("/api/shop-admin/notifications/birthday-template", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getNotificationHistory(params?: NotificationHistoryFilters): Promise<NotificationHistory> {
+    const query = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) query.set(key, value.toString());
+      });
+    }
+    const queryString = query.toString() ? `?${query.toString()}` : "";
+    const result = await this.request<{ data: NotificationHistory } | NotificationHistory>(
+      `/api/shop-admin/notifications/history${queryString}`
+    );
+    return 'data' in result ? result.data : result;
+  }
+
+  async getNotificationAnalytics(): Promise<NotificationAnalytics> {
+    const result = await this.request<{ data: NotificationAnalytics } | NotificationAnalytics>(
+      "/api/shop-admin/notifications/analytics"
+    );
     return 'data' in result ? result.data : result;
   }
 }

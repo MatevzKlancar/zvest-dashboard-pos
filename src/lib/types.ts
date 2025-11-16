@@ -1,3 +1,13 @@
+export type ShopCategory =
+  | "bar"
+  | "restaurant"
+  | "bakery"
+  | "wellness"
+  | "pastry"
+  | "cafe"
+  | "retail"
+  | "other";
+
 export interface Shop {
   id: string;
   name: string;
@@ -8,6 +18,8 @@ export interface Shop {
   website?: string;
   image_url?: string;
   tag?: string;
+  shop_category?: ShopCategory;
+  brand_color?: string;
   loyalty_type: "points" | "coupons";
   points_per_euro?: number;
   qr_display_text?: string;
@@ -129,6 +141,8 @@ export interface ShopUpdateData {
   website?: string;
   image_url?: string;
   tag?: string;
+  shop_category?: ShopCategory;
+  brand_color?: string;
   loyalty_type?: "points" | "coupons";
   points_per_euro?: number;
   qr_display_text?: string;
@@ -171,4 +185,86 @@ export interface SetupFormData {
   shop_phone?: string;
   shop_email?: string;
   loyalty_type?: "points" | "coupons";
+}
+
+// ===========================
+// NOTIFICATION TYPES
+// ===========================
+
+export type NotificationType = "manual" | "birthday" | "points_earned" | "coupon_ready";
+export type NotificationStatus = "pending" | "sent" | "delivered" | "failed" | "error";
+
+export interface Notification {
+  id: string;
+  notification_type: NotificationType;
+  title: string;
+  body: string;
+  status: NotificationStatus;
+  sent_at: string;
+  created_at: string;
+  data?: Record<string, unknown>;
+}
+
+export interface NotificationHistory {
+  notifications: Notification[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface NotificationHistoryFilters {
+  page?: number;
+  limit?: number;
+  type?: NotificationType;
+  status?: NotificationStatus;
+}
+
+export interface BroadcastNotificationData {
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+}
+
+export interface BroadcastNotificationResponse {
+  success: boolean;
+  message: string;
+  data: {
+    sent: number;
+    failed: number;
+    total: number;
+  };
+}
+
+export interface BirthdayTemplate {
+  id: string;
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+  is_active: boolean;
+}
+
+export interface BirthdayTemplateData {
+  title: string;
+  body: string;
+  is_active: boolean;
+  data?: Record<string, unknown>;
+}
+
+export interface BirthdayTemplateResponse {
+  success: boolean;
+  message: string;
+  data: BirthdayTemplate | null;
+}
+
+export interface NotificationAnalytics {
+  total_sent: number;
+  total_delivered: number;
+  total_failed: number;
+  delivery_rate: number;
+  by_type: {
+    manual: number;
+    birthday: number;
+    points_earned: number;
+    coupon_ready: number;
+  };
 }

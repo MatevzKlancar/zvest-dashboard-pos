@@ -73,6 +73,8 @@ export default function ShopPage() {
         phone: shop.phone || "",
         email: shop.email || "",
         website: shop.website || "",
+        shop_category: shop.shop_category,
+        brand_color: shop.brand_color || "#4A90E2",
         loyalty_type: "points", // Always set to points
         points_per_euro: shop.points_per_euro || 100,
         qr_display_text: shop.qr_display_text || "",
@@ -354,6 +356,71 @@ export default function ShopPage() {
                 className="min-h-[80px]"
               />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="shop_category">Shop Category</Label>
+                <Select
+                  value={formData.shop_category || ""}
+                  onValueChange={(value) =>
+                    handleInputChange("shop_category", value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bar">🍺 Bar</SelectItem>
+                    <SelectItem value="restaurant">🍽️ Restaurant</SelectItem>
+                    <SelectItem value="bakery">🥖 Bakery</SelectItem>
+                    <SelectItem value="wellness">💆 Wellness</SelectItem>
+                    <SelectItem value="pastry">🧁 Pastry</SelectItem>
+                    <SelectItem value="cafe">☕ Cafe</SelectItem>
+                    <SelectItem value="retail">🛍️ Retail</SelectItem>
+                    <SelectItem value="other">📦 Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-gray-500">
+                  Select the category that best describes your business
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="brand_color">Brand Color</Label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    id="brand_color_picker"
+                    value={formData.brand_color || "#4A90E2"}
+                    onChange={(e) =>
+                      handleInputChange("brand_color", e.target.value)
+                    }
+                    className="h-10 w-20 rounded border cursor-pointer"
+                  />
+                  <Input
+                    id="brand_color"
+                    type="text"
+                    placeholder="#4A90E2"
+                    value={formData.brand_color || ""}
+                    onChange={(e) =>
+                      handleInputChange("brand_color", e.target.value)
+                    }
+                    maxLength={7}
+                    pattern="^#[0-9A-Fa-f]{6}$"
+                    className="flex-1"
+                  />
+                  <div
+                    className="h-10 w-10 rounded border flex-shrink-0"
+                    style={{
+                      backgroundColor: formData.brand_color || "#4A90E2",
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-gray-500">
+                  Choose your brand color for app customization (hex format)
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -538,6 +605,8 @@ export default function ShopPage() {
                 phone: shop?.phone || "",
                 email: shop?.email || "",
                 website: shop?.website || "",
+                shop_category: shop?.shop_category,
+                brand_color: shop?.brand_color || "#4A90E2",
                 loyalty_type: "points", // Always set to points
                 points_per_euro: shop?.points_per_euro || 100,
                 qr_display_text: shop?.qr_display_text || "",
