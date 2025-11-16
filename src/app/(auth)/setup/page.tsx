@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { Loader2, Store, CheckCircle } from "lucide-react";
 import { InvitationData, SetupFormData } from "@/lib/types";
 
-export default function SetupPage() {
+function SetupPageContent() {
   const [invitation, setInvitation] = useState<InvitationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -62,7 +62,7 @@ export default function SetupPage() {
           shop_name: invitationData.shop_name,
           shop_email: invitationData.customer_email,
         }));
-      } catch (error) {
+      } catch {
         toast.error("Invalid or expired setup link");
         router.push("/login");
       } finally {
@@ -319,5 +319,17 @@ export default function SetupPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function SetupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <SetupPageContent />
+    </Suspense>
   );
 }

@@ -24,8 +24,13 @@ import {
 import { TrendingUp, TrendingDown, Activity, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
+interface AnalyticsData {
+  revenue_last_7_days: number;
+  revenue_last_30_days: number;
+}
+
 interface RevenueForecastProps {
-  analytics: any;
+  analytics: AnalyticsData | null;
   days?: number;
 }
 
@@ -251,7 +256,7 @@ export function RevenueForecast({ analytics, days = 7 }: RevenueForecastProps) {
               tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
             />
             <Tooltip
-              formatter={(value: any, name: string) => {
+              formatter={(value: number | string, name: string) => {
                 if (name === "Revenue" || name === "Forecast") {
                   return formatCurrency(Number(value));
                 }
@@ -260,7 +265,7 @@ export function RevenueForecast({ analytics, days = 7 }: RevenueForecastProps) {
                 }
                 return value;
               }}
-              labelFormatter={(label) => {
+              labelFormatter={(label: string) => {
                 const date = new Date(label);
                 return date.toLocaleDateString("en-US", {
                   weekday: "short",
@@ -299,8 +304,8 @@ export function RevenueForecast({ analytics, days = 7 }: RevenueForecastProps) {
               strokeWidth={2}
               dot={false}
               name="Revenue"
-              strokeDasharray={(value: any, index: number) =>
-                data[index]?.type === "forecast" ? "5 5" : "0"
+              strokeDasharray={(entry: Record<string, unknown>) =>
+                entry?.type === "forecast" ? "5 5" : "0"
               }
             />
 

@@ -20,13 +20,23 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+interface Customer {
+  id: string;
+  name: string;
+  contact_email: string;
+  type: "platform" | "enterprise";
+  subscription_tier: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const { data: customersData, isLoading } = useCustomers({ limit: 10 });
 
-  const totalCustomers = customersData?.data?.length || 0;
-  const activeCustomers =
-    customersData?.data?.filter((c: any) => c.is_active)?.length || 0;
+  const customers = (customersData?.data as unknown as Customer[]) || [];
+  const totalCustomers = customers.length;
+  const activeCustomers = customers.filter((c) => c.is_active).length;
 
   const quickActions = [
     {
@@ -169,9 +179,9 @@ export default function AdminDashboard() {
                 />
               ))}
             </div>
-          ) : customersData?.data && customersData.data.length > 0 ? (
+          ) : customers.length > 0 ? (
             <div className="space-y-4">
-              {customersData.data.slice(0, 5).map((customer: any) => (
+              {customers.slice(0, 5).map((customer) => (
                 <div
                   key={customer.id}
                   className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"

@@ -12,26 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useDashboardWidgets } from "@/hooks/useAnalytics";
-import { useAnalytics, useTransactions } from "@/hooks/useShop";
+import { useTransactions } from "@/hooks/useShop";
 import {
-  Plus,
   TrendingUp,
   TrendingDown,
   Users,
-  Receipt,
-  Gift,
-  ArrowUpRight,
-  ArrowRight,
-  QrCode,
   DollarSign,
   AlertTriangle,
   Info,
@@ -47,9 +33,26 @@ import {
   RefreshCw,
   ShoppingCart,
   Settings,
+  Gift,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
+
+interface Alert {
+  type: string;
+  title: string;
+  message: string;
+  action?: string;
+}
+
+interface Coupon {
+  coupon_id: string;
+  name: string;
+  redemptions_today: number;
+  redemptions_total: number;
+}
+
 
 // Helper functions for formatting
 const formatPercentage = (value: number) => {
@@ -87,8 +90,7 @@ const getAlertStyle = (type: string) => {
 
 export default function DashboardPage() {
   const { data: widgets, isLoading: widgetsLoading, refetch } = useDashboardWidgets();
-  const { data: analytics, isLoading: analyticsLoading } = useAnalytics();
-  const { data: transactionsResponse, isLoading: transactionsLoading } =
+  const { data: transactionsResponse } =
     useTransactions({ limit: 5 });
 
   const transactions = transactionsResponse?.data || [];
@@ -160,7 +162,7 @@ export default function DashboardPage() {
       {/* Business Alerts */}
       {alerts && alerts.length > 0 && (
         <div className="space-y-3">
-          {alerts.map((alert: any, index: number) => {
+          {alerts.map((alert: Alert, index: number) => {
             const alertStyle = getAlertStyle(alert.type);
             const Icon = alertStyle.icon;
 
@@ -175,7 +177,7 @@ export default function DashboardPage() {
                     <span>{alert.message}</span>
                     {alert.action && (
                       <span className="text-sm font-medium ml-4">
-                        💡 {alert.action}
+                        {alert.action}
                       </span>
                     )}
                   </div>
@@ -192,7 +194,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Today's Revenue
+              Today&apos;s Revenue
             </CardTitle>
             <div className="p-2 rounded-lg bg-green-50">
               <DollarSign className="h-4 w-4 text-green-600" />
@@ -317,7 +319,7 @@ export default function DashboardPage() {
                 Daily Revenue Goal
               </CardTitle>
               <CardDescription>
-                Track your progress towards today's target
+                Track your progress towards today&apos;s target
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -338,7 +340,7 @@ export default function DashboardPage() {
                   {goals.daily_revenue_progress}% achieved
                 </span>
                 {goals.daily_revenue_progress >= 100 ? (
-                  <Badge className="bg-green-600">Goal Met! 🎉</Badge>
+                  <Badge className="bg-green-600">Goal Met!</Badge>
                 ) : (
                   <span className="text-gray-500">
                     {formatCurrency(
@@ -375,7 +377,7 @@ export default function DashboardPage() {
                 className="h-3"
               />
               <div className="text-sm text-gray-600">
-                Keep up the great work! You're on track to meet your monthly goal.
+                Keep up the great work! You&apos;re on track to meet your monthly goal.
               </div>
             </CardContent>
           </Card>
@@ -388,14 +390,14 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5" />
-              Today's Top Coupons
+              Today&apos;s Top Coupons
             </CardTitle>
             <CardDescription>Most redeemed coupons today</CardDescription>
           </CardHeader>
           <CardContent>
             {popular_coupons_today && popular_coupons_today.length > 0 ? (
               <div className="space-y-4">
-                {popular_coupons_today.map((coupon: any, index: number) => (
+                {popular_coupons_today.map((coupon: Coupon, index: number) => (
                   <div
                     key={coupon.coupon_id}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"

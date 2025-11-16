@@ -14,7 +14,7 @@ const supabase = createClient(
 );
 
 // GET /api/shop-admin/shop - Get shop information
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify shop admin authorization
     const authHeader = request.headers.get("authorization");
@@ -24,8 +24,6 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const token = authHeader.substring(7);
 
     // For testing purposes, we'll use a simplified shop lookup
     // In production, you'd verify the JWT token and get the shop from the authenticated user
@@ -52,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get loyalty program for the shop
-    const { data: loyaltyProgram, error: loyaltyError } = await supabase
+    const { data: loyaltyProgram } = await supabase
       .from("loyalty_programs")
       .select("*")
       .eq("shop_id", shop.id)

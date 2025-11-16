@@ -5,13 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -218,7 +211,7 @@ export default function ShopSetupPage() {
             <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
               <div className="space-y-4">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="font-medium text-green-800">What's Next?</h3>
+                  <h3 className="font-medium text-green-800">What&apos;s Next?</h3>
                   <ul className="mt-2 text-sm text-green-700 space-y-1">
                     <li>• Log in with your email and password</li>
                     <li>• Complete your shop profile</li>

@@ -23,7 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCreateCoupon } from "@/hooks/useCoupons";
 import { useArticles } from "@/hooks/useArticles";
 import { CreateCouponData, CouponArticle } from "@/lib/types";
-import { Loader2, Save, Plus, X } from "lucide-react";
+import { Loader2, Plus, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface CreateCouponModalProps {
@@ -52,23 +52,19 @@ export function CreateCouponModal({
     is_active: true,
   });
 
-  const [couponScope, setCouponScope] = useState<"global" | "article">(
-    "global"
-  );
-
   const createCoupon = useCreateCoupon();
   const { data: articles, isLoading: articlesLoading } = useArticles({
     active_only: true,
   });
 
-  const handleInputChange = (field: keyof CreateCouponData, value: any) => {
+  const handleInputChange = (field: keyof CreateCouponData, value: string | number | boolean | CouponArticle[]) => {
     setFormData((prev: CreateCouponData) => ({ ...prev, [field]: value }));
   };
 
   const handleArticleChange = (
     index: number,
     field: keyof CouponArticle,
-    value: any
+    value: string | number | null
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -187,8 +183,7 @@ export function CreateCouponModal({
         image_url: "",
         is_active: true,
       });
-      setCouponScope("global");
-    } catch (error) {
+    } catch {
       // Error handling is done in the hook
     }
   };

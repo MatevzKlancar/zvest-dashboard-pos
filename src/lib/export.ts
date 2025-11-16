@@ -7,7 +7,7 @@ import { Transaction, Analytics } from "./types";
 /**
  * Convert array of objects to CSV string
  */
-export function arrayToCSV<T extends Record<string, any>>(
+export function arrayToCSV<T extends Record<string, unknown>>(
   data: T[],
   columns?: { key: keyof T; label: string }[]
 ): string {
@@ -88,8 +88,8 @@ export function exportTransactionsToCSV(transactions: Transaction[]) {
 
   const extendedColumns = [
     ...columns,
-    { key: "customer_name" as keyof any, label: "Customer Name" },
-    { key: "customer_phone" as keyof any, label: "Customer Phone" },
+    { key: "customer_name" as keyof typeof enrichedTransactions[0], label: "Customer Name" },
+    { key: "customer_phone" as keyof typeof enrichedTransactions[0], label: "Customer Phone" },
   ];
 
   const csv = arrayToCSV(enrichedTransactions, extendedColumns);
@@ -134,7 +134,7 @@ export function exportAnalyticsToCSV(analytics: Analytics) {
  * Export chart data to CSV
  */
 export function exportChartDataToCSV(
-  data: any[],
+  data: Record<string, unknown>[],
   filename: string,
   columns?: { key: string; label: string }[]
 ) {

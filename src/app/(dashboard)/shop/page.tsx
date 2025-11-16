@@ -25,11 +25,11 @@ import { ShopUpdateData } from "@/lib/types";
 import { Loader2, Store, Save, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
-import { createClient, getSupabaseToken } from "@/lib/auth";
+import { createClient } from "@/lib/auth";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function ShopPage() {
-  const { data: shop, isLoading, error } = useShop();
+  const { data: shop, isLoading } = useShop();
   const { user } = useAuth();
   const updateShop = useUpdateShop();
   const queryClient = useQueryClient();
@@ -41,14 +41,13 @@ export default function ShopPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   // DEBUG: Log shop data to see what's returned
-  console.log("🔍 Shop loading:", isLoading);
-  console.log("🔍 Shop error:", error);
-  console.log("🔍 Shop data:", shop);
-  console.log("🔍 Shop image_url:", shop?.image_url);
-  console.log("🔍 User data:", user);
+  console.log("Shop loading:", isLoading);
+  console.log("Shop data:", shop);
+  console.log("Shop image_url:", shop?.image_url);
+  console.log("User data:", user);
 
   // DEBUG: Check image display condition
-  console.log("🖼️ Image display condition:", {
+  console.log("Image display condition:", {
     hasShopImageUrl: !!shop?.image_url,
     hasImagePreview: !!imagePreview,
     shouldShowImage: !!(shop?.image_url || imagePreview),
@@ -57,7 +56,7 @@ export default function ShopPage() {
   });
 
   // DEBUG: Check loyalty type
-  console.log("🔍 Loyalty type debug:", {
+  console.log("Loyalty type debug:", {
     shopLoyaltyType: shop?.loyalty_type,
     formDataLoyaltyType: formData.loyalty_type,
     isLoading,
@@ -160,7 +159,7 @@ export default function ShopPage() {
       const filePath = `shops/${shopId}/${fileName}`;
 
       // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("shop-images")
         .upload(filePath, imageFile, {
           cacheControl: "3600",
@@ -202,11 +201,8 @@ export default function ShopPage() {
         "image-upload"
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to upload image"
-      );
+    } catch {
+      toast.error("Failed to upload image");
     } finally {
       setIsUploading(false);
     }
@@ -227,7 +223,7 @@ export default function ShopPage() {
     try {
       await updateShop.mutateAsync(formData);
       setHasChanges(false);
-    } catch (error) {
+    } catch {
       // Error handling is done in the mutation
     }
   };
@@ -259,7 +255,7 @@ export default function ShopPage() {
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
             <CardDescription>
-              Update your shop's basic details and contact information
+              Update your shop&apos;s basic details and contact information
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -269,7 +265,7 @@ export default function ShopPage() {
                 <Input
                   id="name"
                   value={formData.name || ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e) =>
                     handleInputChange("name", e.target.value)
                   }
                   placeholder="Enter shop name"
@@ -283,7 +279,7 @@ export default function ShopPage() {
                   id="email"
                   type="email"
                   value={formData.email || ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e) =>
                     handleInputChange("email", e.target.value)
                   }
                   placeholder="shop@example.com"
@@ -295,7 +291,7 @@ export default function ShopPage() {
                 <Input
                   id="phone"
                   value={formData.phone || ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e) =>
                     handleInputChange("phone", e.target.value)
                   }
                   placeholder="+1 (555) 123-4567"
@@ -308,7 +304,7 @@ export default function ShopPage() {
                   id="website"
                   type="url"
                   value={formData.website || ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e) =>
                     handleInputChange("website", e.target.value)
                   }
                   placeholder="https://www.yourshop.com"
@@ -321,7 +317,7 @@ export default function ShopPage() {
               <Textarea
                 id="description"
                 value={formData.description || ""}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                onChange={(e) =>
                   handleInputChange("description", e.target.value)
                 }
                 placeholder="Describe your shop and what you offer..."
@@ -334,7 +330,7 @@ export default function ShopPage() {
               <Input
                 id="tag"
                 value={formData.tag || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e) =>
                   handleInputChange("tag", e.target.value)
                 }
                 placeholder="e.g., Free pizza, Free coffee, 20% off first order"
@@ -351,7 +347,7 @@ export default function ShopPage() {
               <Textarea
                 id="address"
                 value={formData.address || ""}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                onChange={(e) =>
                   handleInputChange("address", e.target.value)
                 }
                 placeholder="Your shop's full address..."
@@ -380,15 +376,15 @@ export default function ShopPage() {
                       fill
                       className="object-cover"
                       onError={(e) => {
-                        console.error("🚨 Image failed to load:", e);
+                        console.error("Image failed to load:", e);
                         console.error(
-                          "🚨 Image src was:",
+                          "Image src was:",
                           imagePreview || shop?.image_url
                         );
                       }}
                       onLoad={() => {
                         console.log(
-                          "✅ Image loaded successfully:",
+                          "Image loaded successfully:",
                           imagePreview || shop?.image_url
                         );
                       }}
@@ -495,7 +491,7 @@ export default function ShopPage() {
                 min="1"
                 max="1000"
                 value={formData.points_per_euro || 100}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e) =>
                   handleNumericInputChange("points_per_euro", e.target.value)
                 }
                 placeholder="100"
@@ -512,7 +508,7 @@ export default function ShopPage() {
               <Textarea
                 id="qr_display_text"
                 value={formData.qr_display_text || ""}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                onChange={(e) =>
                   handleInputChange("qr_display_text", e.target.value)
                 }
                 placeholder="e.g., Scan for rewards!\nInvoice: {invoice_id}"

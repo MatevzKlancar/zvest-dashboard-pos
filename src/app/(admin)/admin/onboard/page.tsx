@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -39,6 +39,11 @@ const onboardSchema = z.object({
 });
 
 type OnboardFormData = z.infer<typeof onboardSchema>;
+
+interface PosProvider {
+  id: string;
+  name: string;
+}
 
 export default function AdminOnboardPage() {
   const [setupUrl, setSetupUrl] = useState<string>("");
@@ -87,7 +92,7 @@ export default function AdminOnboardPage() {
 
       // Reset form for next customer
       reset();
-    } catch (error) {
+    } catch {
       // Error handling is done in the hook
     }
   };
@@ -298,7 +303,7 @@ export default function AdminOnboardPage() {
                       </SelectItem>
                     ) : (
                       <>
-                        {posProvidersData?.data?.map((provider: any) => (
+                        {((posProvidersData?.data as unknown as PosProvider[]) || []).map((provider) => (
                           <SelectItem key={provider.id} value={provider.name}>
                             {provider.name}
                           </SelectItem>
@@ -391,7 +396,7 @@ export default function AdminOnboardPage() {
                 <Select
                   value={watch("customer_type")}
                   onValueChange={(value) =>
-                    setValue("customer_type", value as any)
+                    setValue("customer_type", value as "platform" | "enterprise")
                   }
                 >
                   <SelectTrigger>
@@ -411,7 +416,7 @@ export default function AdminOnboardPage() {
                 <Select
                   value={watch("subscription_tier")}
                   onValueChange={(value) =>
-                    setValue("subscription_tier", value as any)
+                    setValue("subscription_tier", value as "basic" | "premium" | "enterprise")
                   }
                 >
                   <SelectTrigger>
@@ -430,7 +435,7 @@ export default function AdminOnboardPage() {
                 <Select
                   value={watch("loyalty_type")}
                   onValueChange={(value) =>
-                    setValue("loyalty_type", value as any)
+                    setValue("loyalty_type", value as "points" | "coupons")
                   }
                 >
                   <SelectTrigger>

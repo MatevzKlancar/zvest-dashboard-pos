@@ -10,7 +10,7 @@ export function useCreateB2BCustomer() {
 
   return useMutation({
     mutationFn: apiClient.createB2BCustomer.bind(apiClient),
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("B2B Customer created successfully!");
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },

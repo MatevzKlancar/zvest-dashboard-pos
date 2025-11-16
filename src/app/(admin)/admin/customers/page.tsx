@@ -30,6 +30,17 @@ import { useCustomers } from "@/hooks/useAdmin";
 import { Search, Filter, Plus, Store, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
+interface Customer {
+  id: string;
+  name: string;
+  contact_email: string;
+  type: "platform" | "enterprise";
+  subscription_tier: string;
+  pos_provider_name?: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export default function CustomersPage() {
   const [filters, setFilters] = useState<{
     search: string;
@@ -66,7 +77,7 @@ export default function CustomersPage() {
     });
   };
 
-  const customers = customersData?.data || [];
+  const customers = (customersData?.data as unknown as Customer[]) || [];
 
   return (
     <div className="space-y-6">
@@ -108,7 +119,7 @@ export default function CustomersPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Active</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {customers.filter((c: any) => c.is_active).length}
+                  {customers.filter((c: Customer) => c.is_active).length}
                 </p>
               </div>
               <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -124,7 +135,7 @@ export default function CustomersPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Platform</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {customers.filter((c: any) => c.type === "platform").length}
+                  {customers.filter((c: Customer) => c.type === "platform").length}
                 </p>
               </div>
               <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -140,7 +151,7 @@ export default function CustomersPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Enterprise</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {customers.filter((c: any) => c.type === "enterprise").length}
+                  {customers.filter((c: Customer) => c.type === "enterprise").length}
                 </p>
               </div>
               <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
@@ -232,7 +243,7 @@ export default function CustomersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customers.map((customer: any) => (
+                  {customers.map((customer: Customer) => (
                     <TableRow key={customer.id} className="hover:bg-gray-50">
                       <TableCell>
                         <div className="flex items-center space-x-3">

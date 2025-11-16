@@ -22,7 +22,7 @@ interface CreateTestCustomerRequest {
   initial_points?: number;
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify admin authorization
     const authHeader = request.headers.get("authorization");
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     if (shops && shops.length > 0) {
       for (const shop of shops) {
         // Get or create loyalty program for the shop
-        let { data: loyaltyProgram, error: loyaltyProgramError } =
+        const { data: loyaltyProgram, error: loyaltyProgramError } =
           await supabaseAdmin
             .from("loyalty_programs")
             .select("*")
@@ -161,6 +161,8 @@ export async function POST(request: NextRequest) {
             .eq("type", shop.loyalty_type || "points")
             .eq("is_active", true)
             .single();
+
+        let finalLoyaltyProgram = loyaltyProgram;
 
         // Create loyalty program if it doesn't exist
         if (loyaltyProgramError && loyaltyProgramError.code === "PGRST116") {
@@ -185,7 +187,7 @@ export async function POST(request: NextRequest) {
             );
             continue; // Skip this shop
           }
-          loyaltyProgram = newLoyaltyProgram;
+          finalLoyaltyProgram = newLoyaltyProgram;
         } else if (loyaltyProgramError) {
           console.error("Error fetching loyalty program:", loyaltyProgramError);
           continue; // Skip this shop
@@ -198,7 +200,7 @@ export async function POST(request: NextRequest) {
             .insert({
               app_user_id: appUser.id,
               shop_id: shop.id,
-              loyalty_program_id: loyaltyProgram!.id,
+              loyalty_program_id: finalLoyaltyProgram!.id,
               points_balance: initial_points,
               stamps_count: 0,
               visits_count: 0,
@@ -222,7 +224,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 5: Generate a session for the test customer (optional, for easier testing)
-    const { data: session, error: sessionError } =
+    const { data: session } =
       await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
         email,

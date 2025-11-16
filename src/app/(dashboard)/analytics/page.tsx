@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -17,9 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { useAnalytics, useTransactions } from "@/hooks/useShop";
+import { useAnalytics } from "@/hooks/useShop";
 import { formatCurrency } from "@/lib/utils";
-import { exportAnalyticsToCSV, exportChartDataToCSV } from "@/lib/export";
+import { exportAnalyticsToCSV } from "@/lib/export";
 import { RevenueForecast } from "@/components/analytics/RevenueForecast";
 import {
   BarChart,
@@ -44,10 +44,27 @@ import {
   Receipt,
   Gift,
   Download,
-  Calendar,
   BarChart3,
   Loader2,
 } from "lucide-react";
+
+interface AnalyticsData {
+  revenue_last_30_days: number;
+  transactions_last_30_days: number;
+  revenue_last_7_days: number;
+  transactions_last_7_days: number;
+  scanned_revenue_last_30_days: number;
+  scanned_transactions_last_30_days: number;
+  scanned_revenue_last_7_days: number;
+  scanned_transactions_last_7_days: number;
+  total_coupon_redemptions: number;
+  unique_customers: number;
+  active_coupons: number;
+  total_coupons: number;
+  total_transactions: number;
+  total_revenue: number;
+  avg_transaction_amount: number;
+}
 
 // Helper functions to calculate metrics from real data
 const calculatePercentageChange = (current: number, previous: number) => {
@@ -55,7 +72,7 @@ const calculatePercentageChange = (current: number, previous: number) => {
   return ((current - previous) / previous) * 100;
 };
 
-const generateRevenueChartData = (analytics: any) => {
+const generateRevenueChartData = (analytics: AnalyticsData | undefined) => {
   if (!analytics) return [];
 
   // Generate last 6 months of data based on available metrics
@@ -79,7 +96,7 @@ const generateRevenueChartData = (analytics: any) => {
   });
 };
 
-const generateCategoryData = (analytics: any) => {
+const generateCategoryData = (analytics: AnalyticsData | undefined) => {
   if (!analytics) return [];
 
   // Create estimated category distribution based on coupon data
@@ -93,7 +110,7 @@ const generateCategoryData = (analytics: any) => {
   ];
 };
 
-const generateDailyData = (analytics: any) => {
+const generateDailyData = (analytics: AnalyticsData | undefined) => {
   if (!analytics) return [];
 
   // Generate weekly pattern based on available data
@@ -113,8 +130,6 @@ const generateDailyData = (analytics: any) => {
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<string>("30");
   const { data: analytics, isLoading: analyticsLoading } = useAnalytics();
-  const { data: transactions, isLoading: transactionsLoading } =
-    useTransactions();
 
   // Filter analytics data based on selected time range
   const filteredMetrics = useMemo(() => {
@@ -508,14 +523,14 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Revenue Forecast */}
-      <RevenueForecast analytics={analytics} days={7} />
+      <RevenueForecast analytics={analytics as AnalyticsData | null} days={7} />
 
       {/* Performance Summary */}
       <Card>
         <CardHeader>
           <CardTitle>Performance Summary</CardTitle>
           <CardDescription>
-            Detailed breakdown of your shop's performance
+            Detailed breakdown of your shop&apos;s performance
           </CardDescription>
         </CardHeader>
         <CardContent>

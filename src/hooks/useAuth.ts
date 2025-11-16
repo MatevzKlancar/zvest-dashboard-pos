@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Session } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
@@ -23,7 +23,6 @@ interface AuthState {
 }
 
 const USER_CACHE_KEY = "auth_user_basic";
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export const useAuth = () => {
   const [state, setState] = useState<AuthState>({
@@ -39,7 +38,7 @@ export const useAuth = () => {
     const initializeAuth = async () => {
       try {
         // Add timeout to prevent infinite loading
-        const timeoutPromise = new Promise((_, reject) =>
+        const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Auth timeout")), 5000)
         );
 
@@ -47,8 +46,7 @@ export const useAuth = () => {
 
         const {
           data: { session },
-        } = await Promise.race([sessionPromise, timeoutPromise]).catch((error) => {
-          console.error("Auth timeout or error:", error);
+        } = await Promise.race([sessionPromise, timeoutPromise]).catch(() => {
           return { data: { session: null } };
         });
 
@@ -60,9 +58,8 @@ export const useAuth = () => {
         } else {
           setState({ user: null, loading: false, error: null });
         }
-      } catch (error) {
+      } catch {
         if (!mounted) return;
-        console.error("Auth initialization error:", error);
         setState({
           user: null,
           loading: false,
@@ -75,7 +72,7 @@ export const useAuth = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
       if (event === "SIGNED_OUT") {
@@ -100,6 +97,7 @@ export const useAuth = () => {
       mounted = false;
       subscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createUserFromSession = (authUser: User): AuthUser => {
@@ -108,7 +106,6 @@ export const useAuth = () => {
 
     // Extract basic info from metadata
     const metadata = authUser.user_metadata || {};
-    const appMetadata = authUser.app_metadata || {};
 
     // DEBUG: Re-enable to see what's happening
     console.log("🔧 FIXED DEBUG - User Email:", authUser.email);
@@ -162,43 +159,7 @@ export const useAuth = () => {
       permissions: getDefaultPermissions(user_type),
     };
 
-    // SKIP CACHING for now
-    // setCachedUserData(authUser.id, basicUserData);
-
     return { ...authUser, ...basicUserData };
-  };
-
-  const getCachedUserData = (userId: string) => {
-    try {
-      const cached = localStorage.getItem(USER_CACHE_KEY);
-      if (!cached) return null;
-
-      const { data, timestamp, userId: cachedUserId } = JSON.parse(cached);
-
-      if (cachedUserId === userId && Date.now() - timestamp < CACHE_DURATION) {
-        return data;
-      }
-
-      localStorage.removeItem(USER_CACHE_KEY);
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const setCachedUserData = (userId: string, userData: any) => {
-    try {
-      localStorage.setItem(
-        USER_CACHE_KEY,
-        JSON.stringify({
-          data: userData,
-          timestamp: Date.now(),
-          userId,
-        })
-      );
-    } catch {
-      // Ignore storage errors
-    }
   };
 
   const getDefaultPermissions = (userType: string): string[] => {

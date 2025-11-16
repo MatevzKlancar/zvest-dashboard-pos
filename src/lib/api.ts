@@ -6,7 +6,6 @@ import {
   CreateCouponData,
   CouponFilters,
   Analytics,
-  Transaction,
   TransactionFilters,
   TransactionsResponse,
   InvitationData,
@@ -150,7 +149,7 @@ class ApiClient {
     offset?: number;
     type?: "platform" | "enterprise";
     search?: string;
-  }): Promise<{ data: any[] }> {
+  }): Promise<{ data: Record<string, unknown>[] }> {
     const query = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -160,7 +159,7 @@ class ApiClient {
     return this.request(`/api/admin/customers?${query}`);
   }
 
-  async getPosProviders(): Promise<{ data: any[] }> {
+  async getPosProviders(): Promise<{ data: Record<string, unknown>[] }> {
     return this.request("/api/admin/pos-providers");
   }
 
@@ -183,7 +182,7 @@ class ApiClient {
       opening_hours?: string;
       loyalty_type?: "points" | "coupons";
     };
-  }): Promise<any> {
+  }): Promise<Record<string, unknown>> {
     return this.request("/api/admin/complete-shop-setup", {
       method: "POST",
       body: JSON.stringify(data),
@@ -195,7 +194,7 @@ class ApiClient {
   // ===========================
 
   async getShop(): Promise<Shop> {
-    const result: any = await this.request("/api/shop-admin/shop");
+    const result = await this.request<{ data: Shop }>("/api/shop-admin/shop");
     console.log("🔍 API Client - Raw shop response:", result);
     console.log(
       "🔍 API Client - Shop image_url from response:",
@@ -212,7 +211,7 @@ class ApiClient {
         acc[key] = value;
       }
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, unknown>);
 
     return this.request("/api/shop-admin/shop", {
       method: "PUT",
@@ -228,36 +227,36 @@ class ApiClient {
   }
 
   async getAnalytics(): Promise<Analytics> {
-    const result: any = await this.request("/api/shop-admin/analytics");
+    const result = await this.request<{ data: Analytics } | Analytics>("/api/shop-admin/analytics");
     // Extract the actual analytics data from the wrapper
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
   // New Analytics Endpoints
-  async getDashboardWidgets(): Promise<any> {
-    const result: any = await this.request("/api/shop-admin/dashboard/widgets");
-    return result.data || result;
+  async getDashboardWidgets(): Promise<Record<string, unknown>> {
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>("/api/shop-admin/dashboard/widgets");
+    return 'data' in result ? result.data : result;
   }
 
-  async getCustomerAnalytics(period: string = "30d"): Promise<any> {
-    const result: any = await this.request(
+  async getCustomerAnalytics(period: string = "30d"): Promise<Record<string, unknown>> {
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>(
       `/api/shop-admin/analytics/customers?period=${period}`
     );
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
-  async getCouponAnalytics(period: string = "30d"): Promise<any> {
-    const result: any = await this.request(
+  async getCouponAnalytics(period: string = "30d"): Promise<Record<string, unknown>> {
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>(
       `/api/shop-admin/analytics/coupons?period=${period}`
     );
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
-  async getBusinessTrends(period: string = "30d"): Promise<any> {
-    const result: any = await this.request(
+  async getBusinessTrends(period: string = "30d"): Promise<Record<string, unknown>> {
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>(
       `/api/shop-admin/analytics/trends?period=${period}`
     );
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
   async getProductAnalytics(params?: {
@@ -265,7 +264,7 @@ class ApiClient {
     category?: string;
     sort_by?: "units_sold" | "revenue" | "last_sold";
     limit?: number;
-  }): Promise<any> {
+  }): Promise<Record<string, unknown>> {
     const query = new URLSearchParams();
     if (params?.period) query.set("period", params.period);
     if (params?.category) query.set("category", params.category);
@@ -273,30 +272,30 @@ class ApiClient {
     if (params?.limit) query.set("limit", params.limit.toString());
     const queryString = query.toString() ? `?${query.toString()}` : "";
 
-    const result: any = await this.request(
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>(
       `/api/shop-admin/analytics/products${queryString}`
     );
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
   async getTopCustomers(params?: {
     sort_by?: "total_spent" | "visit_count" | "points_balance";
     limit?: number;
-  }): Promise<any> {
+  }): Promise<Record<string, unknown>> {
     const query = new URLSearchParams();
     if (params?.sort_by) query.set("sort_by", params.sort_by);
     if (params?.limit) query.set("limit", params.limit.toString());
     const queryString = query.toString() ? `?${query.toString()}` : "";
 
-    const result: any = await this.request(
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>(
       `/api/shop-admin/customers/top${queryString}`
     );
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
-  async getCustomerSegments(): Promise<any> {
-    const result: any = await this.request("/api/shop-admin/customers/segments");
-    return result.data || result;
+  async getCustomerSegments(): Promise<Record<string, unknown>> {
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>("/api/shop-admin/customers/segments");
+    return 'data' in result ? result.data : result;
   }
 
   async getArticles(params?: {
@@ -304,7 +303,7 @@ class ApiClient {
     category?: string;
     limit?: number;
     offset?: number;
-  }): Promise<any> {
+  }): Promise<Record<string, unknown>> {
     const query = new URLSearchParams();
     if (params?.active_only !== undefined)
       query.set("active_only", params.active_only.toString());
@@ -313,10 +312,10 @@ class ApiClient {
     if (params?.offset) query.set("offset", params.offset.toString());
     const queryString = query.toString() ? `?${query.toString()}` : "";
 
-    const result: any = await this.request(
+    const result = await this.request<{ data: Record<string, unknown> } | Record<string, unknown>>(
       `/api/shop-admin/articles${queryString}`
     );
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
   async getTransactions(
@@ -337,12 +336,12 @@ class ApiClient {
   // ===========================
 
   async getCoupons(params?: CouponFilters): Promise<Coupon[]> {
-    const queryString = params ? `?${new URLSearchParams(params as any)}` : "";
-    const result: any = await this.request(
+    const queryString = params ? `?${new URLSearchParams(params as Record<string, string>)}` : "";
+    const result = await this.request<{ data: Coupon[] } | Coupon[]>(
       `/api/shop-admin/coupons${queryString}`
     );
     // Extract the actual coupon data from the wrapper
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
   async getCoupon(id: string): Promise<Coupon> {
@@ -350,12 +349,12 @@ class ApiClient {
   }
 
   async createCoupon(data: CreateCouponData): Promise<Coupon> {
-    const result: any = await this.request("/api/shop-admin/coupons", {
+    const result = await this.request<{ data: Coupon } | Coupon>("/api/shop-admin/coupons", {
       method: "POST",
       body: JSON.stringify(data),
     });
     // Extract the actual coupon data from the wrapper
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 
   async updateCoupon(
@@ -381,12 +380,12 @@ class ApiClient {
   async getArticles(params?: { active_only?: boolean; limit?: number }): Promise<Article[]> {
     // Default to a high limit to get all articles unless specified otherwise
     const queryParams = { limit: 1000, ...params };
-    const queryString = `?${new URLSearchParams(queryParams as any)}`;
-    const result: any = await this.request(
+    const queryString = `?${new URLSearchParams(queryParams as Record<string, string>)}`;
+    const result = await this.request<{ data: Article[] } | Article[]>(
       `/api/shop-admin/articles${queryString}`
     );
     // Extract the actual article data from the wrapper
-    return result.data || result;
+    return 'data' in result ? result.data : result;
   }
 }
 

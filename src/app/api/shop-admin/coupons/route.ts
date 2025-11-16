@@ -28,7 +28,7 @@ interface CreateCouponRequest {
 }
 
 // GET /api/shop-admin/coupons - Get all coupons for a shop
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify shop admin authorization
     const authHeader = request.headers.get("authorization");
@@ -38,8 +38,6 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const token = authHeader.substring(7);
 
     // For testing purposes, we'll use a simplified shop lookup
     // In production, you'd verify the JWT token and get the shop from the authenticated user
@@ -77,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     // Parse articles_data for each coupon
     const formattedCoupons = coupons.map((coupon) => {
-      let articles = [];
+      let articles: unknown[] = [];
       try {
         articles =
           typeof coupon.articles_data === "string"
@@ -117,7 +115,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/shop-admin/coupons - Create a new coupon
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify shop admin authorization
     const authHeader = request.headers.get("authorization");
@@ -127,8 +125,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const token = authHeader.substring(7);
 
     // For testing purposes, we'll use a simplified shop lookup
     // Get first active shop for testing (in production, get shop from authenticated user)

@@ -143,6 +143,11 @@ export default function POSTestingPage() {
 
   // Initialize shop ID on component mount
   useEffect(() => {
+    const getShopAdminToken = async () => {
+      const { getSupabaseToken } = await import("@/lib/auth");
+      return await getSupabaseToken();
+    };
+
     const fetchShopInfo = async () => {
       try {
         const token = await getShopAdminToken();
@@ -413,14 +418,14 @@ export default function POSTestingPage() {
       {/* Navigation Tabs */}
       <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
         {[
-          { id: "customer", label: "1. Create Customer", icon: User },
-          { id: "coupon", label: "2. Create Coupon", icon: Zap },
-          { id: "activate", label: "3. Activate Coupon", icon: QrCode },
-          { id: "validate", label: "4. POS Validation", icon: CheckCircle },
+          { id: "customer" as const, label: "1. Create Customer", icon: User },
+          { id: "coupon" as const, label: "2. Create Coupon", icon: Zap },
+          { id: "activate" as const, label: "3. Activate Coupon", icon: QrCode },
+          { id: "validate" as const, label: "4. POS Validation", icon: CheckCircle },
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id)}
             className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeTab === tab.id
                 ? "bg-white text-blue-600 shadow-sm"

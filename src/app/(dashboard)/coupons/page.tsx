@@ -19,28 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useCoupons, useDeleteCoupon } from "@/hooks/useCoupons";
 import { CouponFilters, Coupon } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Plus, Search, Trash2, Ticket } from "lucide-react";
 import { CreateCouponModal } from "@/components/coupons/CreateCouponModal";
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
-import { toast } from "sonner";
 
 export default function CouponsPage() {
   const [filters, setFilters] = useState<CouponFilters>({
@@ -64,7 +48,7 @@ export default function CouponsPage() {
       await deleteCoupon.mutateAsync(selectedCoupon.id);
       setDeleteConfirmOpen(false);
       setSelectedCoupon(null);
-    } catch (error) {
+    } catch {
       // Error handling is done in the hook
     }
   };
@@ -171,8 +155,10 @@ export default function CouponsPage() {
                     </TableCell>
                     <TableCell>
                       {coupon.type === "percentage"
-                        ? `${coupon.value}%`
-                        : formatCurrency(coupon.value)}
+                        ? `${coupon.discount_percentage || 0}%`
+                        : coupon.articles && coupon.articles[0]
+                        ? formatCurrency(coupon.articles[0].discount_value)
+                        : "N/A"}
                     </TableCell>
                     <TableCell>{coupon.points_required || 0} points</TableCell>
                     <TableCell className="max-w-xs truncate">

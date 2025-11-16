@@ -14,16 +14,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  LayoutDashboard,
-  Store,
-  Ticket,
   BarChart3,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Package,
   Receipt,
   Settings,
-  LogOut,
-  ChevronDown,
+  Store,
   TestTube,
-  Package,
+  Ticket,
   Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -145,7 +145,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       await signOut();
       toast.success("Signed out successfully");
       router.push("/login");
-    } catch (error) {
+    } catch {
       toast.error("Failed to sign out");
     } finally {
       setSigningOut(false);

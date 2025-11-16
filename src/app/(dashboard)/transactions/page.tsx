@@ -1,6 +1,21 @@
 "use client";
 
 import { useState } from "react";
+
+interface AppUser {
+  first_name: string | null;
+  last_name: string | null;
+  phone_number: string | null;
+}
+
+interface Transaction {
+  id: string;
+  created_at: string;
+  total_amount: number;
+  loyalty_points_awarded: number;
+  status: string;
+  app_users: AppUser | null;
+}
 import {
   Card,
   CardContent,
@@ -274,7 +289,7 @@ export default function TransactionsPage() {
             <Select
               value={filters.limit?.toString() || ITEMS_PER_PAGE.toString()}
               onValueChange={(value) =>
-                handleFilterChange("limit", parseInt(value) as any)
+                handleFilterChange("limit", parseInt(value) as unknown as string | undefined)
               }
             >
               <SelectTrigger>
@@ -329,7 +344,7 @@ export default function TransactionsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((transaction) => (
+                  {transactions.map((transaction: Transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell className="font-medium font-mono text-sm">
                         {transaction.id.slice(0, 8)}...

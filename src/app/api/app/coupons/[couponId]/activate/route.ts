@@ -28,10 +28,10 @@ function generateRedemptionId(): string {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { couponId: string } }
-) {
+  { params }: { params: Promise<{ couponId: string }> }
+): Promise<NextResponse> {
   try {
-    const { couponId } = params;
+    const { couponId } = await params;
 
     // Verify customer authorization
     const authHeader = request.headers.get("authorization");
@@ -158,7 +158,7 @@ export async function POST(
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
     // Start transaction: Create redemption and update loyalty account
-    const { data: redemption, error: redemptionError } = await supabase
+    const { error: redemptionError } = await supabase
       .from("coupon_redemptions")
       .insert({
         id: redemptionId,
@@ -203,7 +203,7 @@ export async function POST(
     }
 
     // Parse articles data
-    let articlesData = [];
+    let articlesData: unknown[] = [];
     try {
       articlesData =
         typeof coupon.articles_data === "string"

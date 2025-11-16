@@ -35,51 +35,70 @@ import {
 } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import {
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 import { useProductAnalytics } from "@/hooks/useAnalytics";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { exportChartDataToCSV } from "@/lib/export";
 import {
   Package,
   TrendingUp,
-  TrendingDown,
   AlertTriangle,
   ShoppingCart,
   DollarSign,
-  Search,
   Download,
   Star,
   Clock,
-  Zap,
   Coffee,
   Pizza,
   Wine,
-  Info,
   Package2,
   Activity,
-  Target,
-  Award,
   Flame,
   CheckCircle,
   XCircle,
   Loader2,
   ShoppingBag,
   Layers,
+  Award,
+  Target,
+  Info,
+  Zap,
 } from "lucide-react";
 
+interface Product {
+  product_id: string;
+  pos_article_id: string;
+  name: string;
+  category: string;
+  units_sold: number;
+  total_revenue: number;
+  avg_price: number;
+  performance: string;
+  days_since_last_sale: number;
+  last_sold: string | null;
+  rank: number;
+}
+
+interface CategoryData {
+  category: string;
+  revenue: number;
+  units_sold: number;
+  product_count: number;
+}
+
+interface ComboData {
+  product_1: string;
+  product_2: string;
+  frequency: number;
+}
+
 // Category icons mapping
-const categoryIcons: Record<string, any> = {
+const categoryIcons: Record<string, typeof Package2> = {
   coffee: Coffee,
   food: Pizza,
   drinks: Wine,
@@ -133,7 +152,7 @@ export default function ProductsPage() {
     if (!searchTerm) return analyticsData.products;
 
     return analyticsData.products.filter(
-      (product: any) =>
+      (product: Product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.pos_article_id?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -142,7 +161,7 @@ export default function ProductsPage() {
   // Get unique categories from data
   const categories = useMemo(() => {
     if (!analyticsData?.categories) return [];
-    return analyticsData.categories.map((cat: any) => cat.category).filter(Boolean);
+    return analyticsData.categories.map((cat: CategoryData) => cat.category).filter(Boolean);
   }, [analyticsData]);
 
   // Prepare data for charts
@@ -151,7 +170,7 @@ export default function ProductsPage() {
 
     const colors = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"];
 
-    return analyticsData.categories.map((cat: any, index: number) => ({
+    return analyticsData.categories.map((cat: CategoryData, index: number) => ({
       name: cat.category || "Other",
       value: cat.revenue,
       units: cat.units_sold,
@@ -352,7 +371,7 @@ export default function ProductsPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+        <Select value={sortBy} onValueChange={(value) => setSortBy(value as "units_sold" | "revenue" | "last_sold")}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
@@ -402,7 +421,7 @@ export default function ProductsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product: any) => {
+                    {filteredProducts.map((product: Product) => {
                       const badge = getPerformanceBadge(product.performance);
                       const BadgeIcon = badge.icon;
                       const CategoryIcon = getCategoryIcon(product.category);
@@ -577,7 +596,7 @@ export default function ProductsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {analyticsData?.products?.slice(0, 5).map((product: any, index: number) => (
+                  {analyticsData?.products?.slice(0, 5).map((product: Product, index: number) => (
                     <div
                       key={product.product_id}
                       className="flex items-center justify-between p-3 bg-green-50 rounded-lg"
@@ -615,9 +634,9 @@ export default function ProductsPage() {
                 {analyticsData?.products && (
                   <div className="space-y-3">
                     {analyticsData.products
-                      .filter((p: any) => p.performance === "dead_stock")
+                      .filter((p: Product) => p.performance === "dead_stock")
                       .slice(0, 5)
-                      .map((product: any) => (
+                      .map((product: Product) => (
                         <div
                           key={product.product_id}
                           className="flex items-center justify-between p-3 bg-red-50 rounded-lg"
@@ -688,7 +707,7 @@ export default function ProductsPage() {
               <CardContent>
                 {analyticsData?.categories && analyticsData.categories.length > 0 ? (
                   <div className="space-y-3">
-                    {analyticsData.categories.map((category: any) => {
+                    {analyticsData.categories.map((category: CategoryData) => {
                       const CategoryIcon = getCategoryIcon(category.category);
                       const percentage = analyticsData.summary?.total_revenue
                         ? (category.revenue / analyticsData.summary.total_revenue) * 100
@@ -741,7 +760,7 @@ export default function ProductsPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {analyticsData.frequently_bought_together.slice(0, 6).map((combo: any, index: number) => (
+                  {analyticsData.frequently_bought_together.slice(0, 6).map((combo: ComboData, index: number) => (
                     <div key={index} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant="secondary">{combo.frequency}x</Badge>
@@ -791,9 +810,7 @@ export default function ProductsPage() {
                     <TrendingUp className="h-4 w-4 text-green-600" />
                     <AlertTitle className="text-green-900">Promote Best Sellers</AlertTitle>
                     <AlertDescription className="text-green-700">
-                      "{analyticsData.products[0].name}" is your top performer with{" "}
-                      {analyticsData.products[0].units_sold} units sold.
-                      Feature it prominently.
+                      &quot;{analyticsData.products[0].name}&quot; is your top performer with {analyticsData.products[0].units_sold} units sold. Feature it prominently.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -830,7 +847,7 @@ export default function ProductsPage() {
                     </span>
                   </div>
                   <p className="text-sm text-purple-700">
-                    Add "Best Seller" badges to your top 5 products on menu/display
+                    Add &quot;Best Seller&quot; badges to your top 5 products on menu/display
                   </p>
                 </div>
 

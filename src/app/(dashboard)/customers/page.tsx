@@ -44,24 +44,36 @@ import {
   UserCheck,
   UserX,
   Award,
-  TrendingUp,
-  TrendingDown,
   Activity,
   Mail,
-  Phone,
   Calendar,
   DollarSign,
-  ShoppingCart,
   Clock,
   Star,
   AlertTriangle,
-  Target,
   Heart,
   Crown,
   Sparkles,
-  ChevronUp,
-  ChevronDown,
 } from "lucide-react";
+
+interface Customer {
+  customer_id: string;
+  name: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  phone_number: string;
+  total_spent: number;
+  visit_count: number;
+  first_visit: string;
+  days_since_visit: number;
+  days_since_last_visit: number;
+  points_balance: number;
+  avg_transaction: number;
+  percentile: number;
+  customer_rank: number;
+  loyalty_score: number;
+}
 
 // Helper to get customer tier based on percentile
 const getCustomerTier = (percentile: number) => {
@@ -82,12 +94,12 @@ export default function CustomersPage() {
   const [sortBy, setSortBy] = useState<"total_spent" | "visit_count" | "points_balance">("total_spent");
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { data: analytics, isLoading: analyticsLoading } = useCustomerAnalytics(period);
+  const { data: analytics } = useCustomerAnalytics(period);
   const { data: topCustomers, isLoading: topCustomersLoading } = useTopCustomers({
     sort_by: sortBy,
     limit: 20,
   });
-  const { data: segments, isLoading: segmentsLoading } = useCustomerSegments();
+  const { data: segments } = useCustomerSegments();
 
   return (
     <div className="space-y-6">
@@ -355,7 +367,7 @@ export default function CustomersPage() {
                 <CardContent>
                   {segments.vip_customers && segments.vip_customers.length > 0 ? (
                     <div className="space-y-3">
-                      {segments.vip_customers.slice(0, 5).map((customer: any) => (
+                      {segments.vip_customers.slice(0, 5).map((customer: Customer) => (
                         <div
                           key={customer.customer_id}
                           className="flex items-center justify-between p-3 bg-purple-50 rounded-lg"
@@ -385,13 +397,13 @@ export default function CustomersPage() {
                     At Risk Customers
                   </CardTitle>
                   <CardDescription>
-                    Haven't visited in 30-60 days
+                    Haven&apos;t visited in 30-60 days
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {segments.at_risk_customers && segments.at_risk_customers.length > 0 ? (
                     <div className="space-y-3">
-                      {segments.at_risk_customers.slice(0, 5).map((customer: any) => (
+                      {segments.at_risk_customers.slice(0, 5).map((customer: Customer) => (
                         <div
                           key={customer.customer_id}
                           className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg"
@@ -435,7 +447,7 @@ export default function CustomersPage() {
                 <CardContent>
                   {segments.new_customers && segments.new_customers.length > 0 ? (
                     <div className="space-y-3">
-                      {segments.new_customers.slice(0, 5).map((customer: any) => (
+                      {segments.new_customers.slice(0, 5).map((customer: Customer) => (
                         <div
                           key={customer.customer_id}
                           className="flex items-center justify-between p-3 bg-green-50 rounded-lg"
@@ -475,7 +487,7 @@ export default function CustomersPage() {
                 <CardContent>
                   {segments.loyal_customers && segments.loyal_customers.length > 0 ? (
                     <div className="space-y-3">
-                      {segments.loyal_customers.slice(0, 5).map((customer: any) => (
+                      {segments.loyal_customers.slice(0, 5).map((customer: Customer) => (
                         <div
                           key={customer.customer_id}
                           className="flex items-center justify-between p-3 bg-red-50 rounded-lg"
@@ -517,7 +529,7 @@ export default function CustomersPage() {
                     Your highest value customers ranked by performance
                   </CardDescription>
                 </div>
-                <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as "total_spent" | "visit_count" | "points_balance")}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
@@ -551,7 +563,7 @@ export default function CustomersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {topCustomers.map((customer: any) => {
+                    {topCustomers.map((customer: Customer) => {
                       const tier = getCustomerTier(customer.percentile);
                       const TierIcon = tier.icon;
 
