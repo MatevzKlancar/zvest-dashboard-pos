@@ -247,8 +247,8 @@ export function BirthdayTemplateForm() {
               their birthday
             </p>
             <p>
-              <strong>Clear CTA:</strong> Tell them exactly what to do (e.g., "Visit us
-              today!")
+              <strong>Clear CTA:</strong> Tell them exactly what to do (e.g., &ldquo;Visit us
+              today!&rdquo;)
             </p>
           </CardContent>
         </Card>
