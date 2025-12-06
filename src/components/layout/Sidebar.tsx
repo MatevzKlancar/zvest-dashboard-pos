@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  QrCode,
   Receipt,
   Settings,
   Store,
@@ -28,10 +29,12 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useCustomerType } from "@/hooks/useCustomerType";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
+import { CustomerType } from "@/lib/types";
 
-const getNavigationItems = (userType?: string) => {
+const getNavigationItems = (userType?: string, customerType?: CustomerType) => {
   const adminNavItems = [
     {
       name: "Admin Dashboard",
@@ -57,6 +60,24 @@ const getNavigationItems = (userType?: string) => {
       name: "Settings",
       href: "/admin/settings",
       icon: Settings,
+    },
+  ];
+
+  const externalQRNavItems = [
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "QR Codes",
+      href: "/qr-codes",
+      icon: QrCode,
+    },
+    {
+      name: "Shop Profile",
+      href: "/shop",
+      icon: Store,
     },
   ];
 
@@ -121,6 +142,11 @@ const getNavigationItems = (userType?: string) => {
     },
   ];
 
+  // Check for external-qr-codes customer type first
+  if (userType === "shop_owner" && customerType === "external-qr-codes") {
+    return externalQRNavItems;
+  }
+
   switch (userType) {
     case "admin":
       return adminNavItems;
@@ -141,9 +167,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAdmin, isShopOwner } = useAuth();
+  const { customerType } = useCustomerType();
   const [signingOut, setSigningOut] = useState(false);
 
-  const navigation = getNavigationItems(user?.user_type);
+  const navigation = getNavigationItems(user?.user_type, customerType);
 
   const handleSignOut = async () => {
     setSigningOut(true);

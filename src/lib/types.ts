@@ -8,6 +8,8 @@ export type ShopCategory =
   | "retail"
   | "other";
 
+export type CustomerType = "platform" | "enterprise" | "external-qr-codes";
+
 export interface Shop {
   id: string;
   name: string;
@@ -28,6 +30,12 @@ export interface Shop {
   status: string;
   created_at: string;
   updated_at: string;
+  customers?: {
+    id: string;
+    name: string;
+    type: CustomerType;
+  };
+  feature_tags?: string[];
 }
 
 export interface Article {
@@ -41,6 +49,61 @@ export interface Article {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface ArticleFilters {
+  active_only?: boolean;
+  limit?: number;
+  offset?: number;
+  search?: string;
+}
+
+export interface ExternalQRCode {
+  id: string;
+  shop_id: string;
+  article_id: string;
+  qr_code: string;
+  status: "active" | "used";
+  used_at: string | null;
+  created_at: string;
+  article?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface ExternalQRCodeFilters {
+  status?: "active" | "used" | "all";
+  limit?: number;
+  offset?: number;
+  search?: string;
+}
+
+export interface BulkImportQRCodeData {
+  article_id: string;
+  qr_codes: string[];
+}
+
+export interface BulkImportResponse {
+  success: boolean;
+  message: string;
+  data: {
+    imported_count: number;
+    duplicate_count: number;
+    error_count: number;
+    duplicates: string[];
+    errors: Array<{ qr_code: string; error: string }>;
+  };
+}
+
+export interface ExternalQRCodesResponse {
+  success: boolean;
+  data: ExternalQRCode[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
 }
 
 export interface CouponArticle {

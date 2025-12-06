@@ -48,9 +48,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTransactions, useAnalytics } from "@/hooks/useShop";
+import { useCustomerType } from "@/hooks/useCustomerType";
 import { TransactionFilters } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { exportTransactionsToCSV } from "@/lib/export";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Search,
   Filter,
@@ -67,6 +70,9 @@ import {
 const ITEMS_PER_PAGE = 10;
 
 export default function TransactionsPage() {
+  const router = useRouter();
+  const { isExternalQRCustomer, isLoading: customerTypeLoading } = useCustomerType();
+
   const [filters, setFilters] = useState<TransactionFilters>({
     limit: ITEMS_PER_PAGE,
     offset: 0,
@@ -76,6 +82,13 @@ export default function TransactionsPage() {
 
   const { data: response, isLoading } = useTransactions(filters);
   const { data: analytics } = useAnalytics();
+
+  // Redirect external-qr customers
+  if (!customerTypeLoading && isExternalQRCustomer) {
+    toast.error("This feature is not available for your account type");
+    router.push("/qr-codes");
+    return null;
+  }
 
   // Extract data from new response format
   const transactions = response?.data || [];

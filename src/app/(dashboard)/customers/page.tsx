@@ -37,7 +37,10 @@ import {
   useTopCustomers,
   useCustomerSegments,
 } from "@/hooks/useAnalytics";
+import { useCustomerType } from "@/hooks/useCustomerType";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Users,
   UserPlus,
@@ -90,6 +93,8 @@ const formatRetention = (rate: number) => {
 };
 
 export default function CustomersPage() {
+  const router = useRouter();
+  const { isExternalQRCustomer, isLoading: customerTypeLoading } = useCustomerType();
   const [period, setPeriod] = useState("30d");
   const [sortBy, setSortBy] = useState<"total_spent" | "visit_count" | "points_balance">("total_spent");
   const [activeTab, setActiveTab] = useState("overview");
@@ -100,6 +105,13 @@ export default function CustomersPage() {
     limit: 20,
   });
   const { data: segments } = useCustomerSegments();
+
+  // Redirect external-qr customers
+  if (!customerTypeLoading && isExternalQRCustomer) {
+    toast.error("This feature is not available for your account type");
+    router.push("/qr-codes");
+    return null;
+  }
 
   return (
     <div className="space-y-6">

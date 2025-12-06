@@ -42,6 +42,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useProductAnalytics } from "@/hooks/useAnalytics";
+import { useCustomerType } from "@/hooks/useCustomerType";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import { exportChartDataToCSV } from "@/lib/export";
 import {
@@ -131,6 +134,9 @@ const getPerformanceBadge = (performance: string) => {
 };
 
 export default function ProductsPage() {
+  const router = useRouter();
+  const { isExternalQRCustomer, isLoading: customerTypeLoading } = useCustomerType();
+
   const [period, setPeriod] = useState("30d");
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [sortBy, setSortBy] = useState<"units_sold" | "revenue" | "last_sold">("units_sold");
@@ -144,6 +150,13 @@ export default function ProductsPage() {
     sort_by: sortBy,
     limit: 100,
   });
+
+  // Redirect external-qr customers
+  if (!customerTypeLoading && isExternalQRCustomer) {
+    toast.error("This feature is not available for your account type");
+    router.push("/qr-codes");
+    return null;
+  }
 
   // Filter products by search term
   const filteredProducts = useMemo(() => {

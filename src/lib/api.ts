@@ -10,6 +10,7 @@ import {
   TransactionsResponse,
   InvitationData,
   Article,
+  ArticleFilters,
   BroadcastNotificationData,
   BroadcastNotificationResponse,
   BirthdayTemplateData,
@@ -17,6 +18,11 @@ import {
   NotificationHistory,
   NotificationHistoryFilters,
   NotificationAnalytics,
+  ExternalQRCode,
+  ExternalQRCodeFilters,
+  ExternalQRCodesResponse,
+  BulkImportQRCodeData,
+  BulkImportResponse,
 } from "./types";
 
 class ApiClient {
@@ -366,13 +372,57 @@ class ApiClient {
 
   async getArticles(params?: { active_only?: boolean; limit?: number }): Promise<Article[]> {
     // Default to a high limit to get all articles unless specified otherwise
-    const queryParams = { limit: 1000, ...params };
-    const queryString = `?${new URLSearchParams(queryParams as Record<string, string>)}`;
+    const query = new URLSearchParams();
+    const limit = params?.limit ?? 1000;
+    const activeOnly = params?.active_only;
+
+    query.set("limit", limit.toString());
+    if (activeOnly !== undefined) {
+      query.set("active_only", activeOnly.toString());
+    }
+
+    const queryString = `?${query.toString()}`;
     const result = await this.request<{ data: Article[] } | Article[]>(
       `/api/shop-admin/articles${queryString}`
     );
     // Extract the actual article data from the wrapper
     return 'data' in result ? result.data : result;
+  }
+
+  // ===========================
+  // EXTERNAL QR CODE ENDPOINTS
+  // ===========================
+
+  async getExternalQRCodes(
+    articleId: string,
+    params?: ExternalQRCodeFilters
+  ): Promise<ExternalQRCodesResponse> {
+    const query = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== "all") {
+          query.set(key, value.toString());
+        }
+      });
+    }
+    const queryString = query.toString() ? `?${query.toString()}` : "";
+    return this.request(`/api/shop-admin/articles/${articleId}/qr-codes${queryString}`);
+  }
+
+  async importQRCodes(
+    articleId: string,
+    qrCodes: string[]
+  ): Promise<BulkImportResponse> {
+    return this.request(`/api/shop-admin/articles/${articleId}/qr-codes/import`, {
+      method: "POST",
+      body: JSON.stringify({ qr_codes: qrCodes }),
+    });
+  }
+
+  async deleteQRCode(qrCodeId: string): Promise<{ success: boolean; message: string }> {
+    return this.request(`/api/shop-admin/qr-codes/${qrCodeId}`, {
+      method: "DELETE",
+    });
   }
 
   // ===========================

@@ -20,13 +20,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCoupons, useDeleteCoupon } from "@/hooks/useCoupons";
+import { useCustomerType } from "@/hooks/useCustomerType";
 import { CouponFilters, Coupon } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Plus, Search, Trash2, Ticket } from "lucide-react";
 import { CreateCouponModal } from "@/components/coupons/CreateCouponModal";
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function CouponsPage() {
+  const router = useRouter();
+  const { isExternalQRCustomer, isLoading: customerTypeLoading } = useCustomerType();
+
   const [filters, setFilters] = useState<CouponFilters>({
     search: "",
   });
@@ -36,6 +42,13 @@ export default function CouponsPage() {
 
   const { data: coupons, isLoading } = useCoupons(filters);
   const deleteCoupon = useDeleteCoupon();
+
+  // Redirect external-qr customers
+  if (!customerTypeLoading && isExternalQRCustomer) {
+    toast.error("This feature is not available for your account type");
+    router.push("/qr-codes");
+    return null;
+  }
 
   const handleSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, search: value }));

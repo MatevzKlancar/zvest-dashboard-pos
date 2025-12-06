@@ -14,6 +14,9 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useDashboardWidgets } from "@/hooks/useAnalytics";
 import { useTransactions } from "@/hooks/useShop";
+import { useCustomerType } from "@/hooks/useCustomerType";
+import { useArticles } from "@/hooks/useArticles";
+import { QRCodeStats } from "@/components/qr-codes/QRCodeStats";
 import {
   TrendingUp,
   TrendingDown,
@@ -35,6 +38,9 @@ import {
   Settings,
   Gift,
   ArrowRight,
+  QrCode,
+  Upload,
+  List,
 } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -89,20 +95,166 @@ const getAlertStyle = (type: string) => {
 };
 
 export default function DashboardPage() {
+  const { isExternalQRCustomer, isLoading: customerTypeLoading } = useCustomerType();
   const { data: widgets, isLoading: widgetsLoading, refetch } = useDashboardWidgets();
-  const { data: transactionsResponse } =
-    useTransactions({ limit: 5 });
+  const { data: transactionsResponse } = useTransactions({ limit: 5 });
+  const { data: articles } = useArticles();
 
   const transactions = transactionsResponse?.data || [];
 
-  // Auto-refresh dashboard every 30 seconds
+  // Auto-refresh dashboard every 30 seconds (only for standard dashboard)
   useEffect(() => {
+    if (isExternalQRCustomer) return;
+
     const interval = setInterval(() => {
       refetch();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [refetch]);
+  }, [refetch, isExternalQRCustomer]);
+
+  // Render simplified dashboard for external-qr-codes customers
+  if (isExternalQRCustomer) {
+    // Note: Since we don't have a selected article yet, we show placeholder stats
+    // The actual QR code stats will be shown on the /qr-codes page
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">QR Code Management</h2>
+          <p className="text-gray-600">
+            Manage your external QR codes for free article redemptions
+          </p>
+        </div>
+
+        {/* Welcome Alert */}
+        <Alert className="border-blue-200 bg-blue-50">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="font-semibold text-blue-900">
+            Welcome to QR Code Management
+          </AlertTitle>
+          <AlertDescription className="text-blue-800">
+            This dashboard allows you to import and manage QR codes that customers can
+            redeem for free articles at your POS. Import codes, link them to articles,
+            and track redemptions all in one place.
+          </AlertDescription>
+        </Alert>
+
+        {/* Quick Stats Placeholder */}
+        <QRCodeStats
+          totalCodes={0}
+          activeCodes={0}
+          usedCodes={0}
+          isLoading={customerTypeLoading}
+        />
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5 text-blue-600" />
+                Import QR Codes
+              </CardTitle>
+              <CardDescription>
+                Upload QR codes and link them to articles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/qr-codes">
+                <Button className="w-full">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Go to QR Codes
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <List className="h-5 w-5 text-green-600" />
+                View All Codes
+              </CardTitle>
+              <CardDescription>
+                See all your imported QR codes and their status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/qr-codes">
+                <Button variant="outline" className="w-full">
+                  <List className="h-4 w-4 mr-2" />
+                  View QR Codes
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-purple-600" />
+                Shop Settings
+              </CardTitle>
+              <CardDescription>
+                Update your shop profile and preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/shop">
+                <Button variant="outline" className="w-full">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Shop Profile
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Articles List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Articles</CardTitle>
+            <CardDescription>
+              These are the articles you can link to QR codes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {articles && articles.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {articles.slice(0, 6).map((article) => (
+                  <div
+                    key={article.id}
+                    className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="font-medium">{article.name}</div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      {formatCurrency(article.price)}
+                    </div>
+                    {article.category && (
+                      <Badge variant="outline" className="mt-2 text-xs">
+                        {article.category}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <QrCode className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p>No articles found. Contact support to add articles.</p>
+              </div>
+            )}
+            {articles && articles.length > 6 && (
+              <div className="mt-4 text-center text-sm text-gray-600">
+                Showing 6 of {articles.length} articles
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const {
     revenue_today,

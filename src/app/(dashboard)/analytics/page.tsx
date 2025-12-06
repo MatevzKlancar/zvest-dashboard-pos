@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from "@/hooks/useShop";
+import { useCustomerType } from "@/hooks/useCustomerType";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import { exportAnalyticsToCSV } from "@/lib/export";
 import { RevenueForecast } from "@/components/analytics/RevenueForecast";
@@ -128,8 +131,17 @@ const generateDailyData = (analytics: AnalyticsData | undefined) => {
 };
 
 export default function AnalyticsPage() {
+  const router = useRouter();
+  const { isExternalQRCustomer, isLoading: customerTypeLoading } = useCustomerType();
   const [timeRange, setTimeRange] = useState<string>("30");
   const { data: analytics, isLoading: analyticsLoading } = useAnalytics();
+
+  // Redirect external-qr customers
+  if (!customerTypeLoading && isExternalQRCustomer) {
+    toast.error("This feature is not available for your account type");
+    router.push("/qr-codes");
+    return null;
+  }
 
   // Filter analytics data based on selected time range
   const filteredMetrics = useMemo(() => {

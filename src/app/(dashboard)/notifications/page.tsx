@@ -7,9 +7,21 @@ import { NotificationAnalyticsWidget } from "@/components/notifications/Notifica
 import { BroadcastNotificationForm } from "@/components/notifications/BroadcastNotificationForm";
 import { BirthdayTemplateForm } from "@/components/notifications/BirthdayTemplateForm";
 import { NotificationHistoryTable } from "@/components/notifications/NotificationHistoryTable";
+import { useCustomerType } from "@/hooks/useCustomerType";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function NotificationsPage() {
+  const router = useRouter();
+  const { isExternalQRCustomer, isLoading: customerTypeLoading } = useCustomerType();
   const [activeTab, setActiveTab] = useState("analytics");
+
+  // Redirect external-qr customers
+  if (!customerTypeLoading && isExternalQRCustomer) {
+    toast.error("This feature is not available for your account type");
+    router.push("/qr-codes");
+    return null;
+  }
 
   return (
     <div className="space-y-6">
