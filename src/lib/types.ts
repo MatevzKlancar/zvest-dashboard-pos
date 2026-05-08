@@ -131,6 +131,7 @@ export interface Coupon {
   used_count: number;
   image_url?: string;
   is_active: boolean;
+  is_birthday_only?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -222,6 +223,7 @@ export interface CreateCouponData {
   expires_at?: string;
   image_url?: string;
   is_active: boolean;
+  is_birthday_only?: boolean;
 }
 
 export interface CouponFilters {
@@ -254,8 +256,23 @@ export interface SetupFormData {
 // NOTIFICATION TYPES
 // ===========================
 
-export type NotificationType = "manual" | "birthday" | "points_earned" | "coupon_ready";
-export type NotificationStatus = "pending" | "sent" | "delivered" | "failed" | "error";
+export type NotificationCategory = "manual" | "daily_meal" | "specials";
+
+export type NotificationType =
+  | "manual"
+  | "birthday"
+  | "points_earned"
+  | "coupon_ready"
+  | "daily_meal"
+  | "specials";
+
+export type NotificationStatus =
+  | "pending"
+  | "sent"
+  | "delivered"
+  | "failed"
+  | "error"
+  | "dry_run";
 
 export interface Notification {
   id: string;
@@ -283,19 +300,50 @@ export interface NotificationHistoryFilters {
 }
 
 export interface BroadcastNotificationData {
+  category: NotificationCategory;
   title: string;
   body: string;
   data?: Record<string, unknown>;
+  scheduled_for?: string; // ISO 8601
+}
+
+export interface BroadcastResultData {
+  scheduled: boolean;
+  scheduled_id: string | null;
+  audience_size: number;
+  sent?: number;
+  failed?: number;
+  dry_run?: number;
+  daily_quota_remaining?: number;
+  retry_after_seconds?: number;
 }
 
 export interface BroadcastNotificationResponse {
-  success: boolean;
+  status: number;
   message: string;
-  data: {
-    sent: number;
-    failed: number;
-    total: number;
-  };
+  data: BroadcastResultData;
+}
+
+export interface AudiencePreview {
+  category: NotificationCategory;
+  subscribed_count: number;
+  total_with_loyalty: number;
+  total_subscribers: number;
+}
+
+export interface BroadcastQuota {
+  daily_limit: number;
+  daily_remaining: number;
+  hourly_limit: number;
+  can_send_now: boolean;
+  retry_after_seconds: number;
+}
+
+export interface BirthdayCouponSummary {
+  id: string;
+  name: string;
+  type: string;
+  is_birthday_only: boolean;
 }
 
 export interface BirthdayTemplate {
@@ -304,6 +352,8 @@ export interface BirthdayTemplate {
   body: string;
   data?: Record<string, unknown>;
   is_active: boolean;
+  coupon_id?: string | null;
+  coupon?: BirthdayCouponSummary | null;
 }
 
 export interface BirthdayTemplateData {
@@ -311,10 +361,12 @@ export interface BirthdayTemplateData {
   body: string;
   is_active: boolean;
   data?: Record<string, unknown>;
+  coupon_id?: string | null;
 }
 
 export interface BirthdayTemplateResponse {
-  success: boolean;
+  status?: number;
+  success?: boolean;
   message: string;
   data: BirthdayTemplate | null;
 }
@@ -323,11 +375,64 @@ export interface NotificationAnalytics {
   total_sent: number;
   total_delivered: number;
   total_failed: number;
+  total_dry_run?: number;
   delivery_rate: number;
-  by_type: {
-    manual: number;
-    birthday: number;
-    points_earned: number;
-    coupon_ready: number;
-  };
+  by_type: Record<string, number>;
+  delivery_rate_by_type?: Record<string, number>;
+  subscriber_count?: number;
+  subscriber_count_by_category?: Record<string, number>;
+}
+
+// Scheduled notifications queue
+export type ScheduledStatus = "scheduled" | "sent" | "cancelled" | "failed";
+
+export interface ScheduledNotification {
+  id: string;
+  notification_type: NotificationType;
+  title: string;
+  body: string;
+  scheduled_for: string;
+  status: ScheduledStatus;
+  recipient_count: number | null;
+  sent_at: string | null;
+  created_at: string;
+}
+
+export interface ScheduledNotificationsResponse {
+  scheduled: ScheduledNotification[];
+}
+
+// Weekly plans
+export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Sun..6=Sat
+
+export interface WeeklyPlan {
+  id: string;
+  name: string;
+  is_active: boolean;
+  timezone: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WeeklyPlanEntry {
+  id?: string;
+  day_of_week: DayOfWeek;
+  send_time_local: string; // HH:MM:SS or HH:MM
+  notification_type: NotificationCategory;
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+  is_active?: boolean;
+}
+
+export interface CreatePlanData {
+  name: string;
+  timezone?: string;
+  is_active?: boolean;
+}
+
+export interface UpdatePlanData {
+  name?: string;
+  timezone?: string;
+  is_active?: boolean;
 }

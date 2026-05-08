@@ -219,8 +219,12 @@ export default function AnalyticsPage() {
   const avgTransactionChange = useMemo(() => {
     if (!analytics) return null;
     // Compare average transaction value trends
-    const current7d = analytics.revenue_last_7_days / analytics.transactions_last_7_days;
-    const current30d = analytics.revenue_last_30_days / analytics.transactions_last_30_days;
+    const current7d = analytics.transactions_last_7_days > 0
+      ? analytics.revenue_last_7_days / analytics.transactions_last_7_days
+      : 0;
+    const current30d = analytics.transactions_last_30_days > 0
+      ? analytics.revenue_last_30_days / analytics.transactions_last_30_days
+      : 0;
     return calculatePercentageChange(current7d, current30d);
   }, [analytics]);
 
@@ -258,7 +262,9 @@ export default function AnalyticsPage() {
     {
       title: "Avg. Transaction",
       value: analytics && filteredMetrics
-        ? formatCurrency(filteredMetrics.revenue / filteredMetrics.transactions)
+        ? formatCurrency(filteredMetrics.transactions > 0
+            ? filteredMetrics.revenue / filteredMetrics.transactions
+            : 0)
         : "...",
       change: avgTransactionChange !== null
         ? `${avgTransactionChange > 0 ? '+' : ''}${avgTransactionChange.toFixed(1)}%`

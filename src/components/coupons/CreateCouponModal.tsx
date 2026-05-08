@@ -50,6 +50,7 @@ export function CreateCouponModal({
     expires_at: "",
     image_url: "",
     is_active: true,
+    is_birthday_only: false,
   });
 
   const createCoupon = useCreateCoupon();
@@ -151,6 +152,7 @@ export function CreateCouponModal({
       name: formData.name,
       description: formData.description,
       is_active: formData.is_active,
+      is_birthday_only: formData.is_birthday_only ?? false,
     };
 
     // Add expires_at only if provided (convert to ISO format)
@@ -182,6 +184,7 @@ export function CreateCouponModal({
         expires_at: "",
         image_url: "",
         is_active: true,
+        is_birthday_only: false,
       });
     } catch {
       // Error handling is done in the hook
@@ -398,6 +401,26 @@ export function CreateCouponModal({
               }
             />
             <Label htmlFor="is_active">Active (visible to customers)</Label>
+          </div>
+
+          <div className="space-y-2 rounded-lg border p-3">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_birthday_only"
+                checked={!!formData.is_birthday_only}
+                onCheckedChange={(checked: boolean) =>
+                  handleInputChange("is_birthday_only", checked)
+                }
+              />
+              <Label htmlFor="is_birthday_only" className="flex items-center gap-1">
+                🎂 Birthday-only coupon
+              </Label>
+            </div>
+            <p className="text-xs text-gray-500 leading-snug">
+              When enabled, this coupon is hidden from the general coupon list. Only customers
+              celebrating their birthday today will see it in the app, and each customer can
+              redeem it only once.
+            </p>
           </div>
 
           <div className="flex justify-end gap-4 pt-4 border-t">

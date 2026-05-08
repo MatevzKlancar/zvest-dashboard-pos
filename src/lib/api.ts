@@ -18,6 +18,15 @@ import {
   NotificationHistory,
   NotificationHistoryFilters,
   NotificationAnalytics,
+  NotificationCategory,
+  AudiencePreview,
+  BroadcastQuota,
+  ScheduledNotification,
+  ScheduledStatus,
+  WeeklyPlan,
+  WeeklyPlanEntry,
+  CreatePlanData,
+  UpdatePlanData,
   ExternalQRCode,
   ExternalQRCodeFilters,
   ExternalQRCodesResponse,
@@ -241,8 +250,11 @@ class ApiClient {
 
   async getAnalytics(): Promise<Analytics> {
     const result = await this.request<{ data: Analytics } | Analytics>("/api/shop-admin/analytics");
+    console.log("🔍 API Client - Raw analytics response:", result);
     // Extract the actual analytics data from the wrapper
-    return 'data' in result ? result.data : result;
+    const analytics = 'data' in result ? result.data : result;
+    console.log("🔍 API Client - Extracted analytics data:", analytics);
+    return analytics;
   }
 
   // New Analytics Endpoints
@@ -464,6 +476,99 @@ class ApiClient {
   async getNotificationAnalytics(): Promise<NotificationAnalytics> {
     const result = await this.request<{ data: NotificationAnalytics } | NotificationAnalytics>(
       "/api/shop-admin/notifications/analytics"
+    );
+    return 'data' in result ? result.data : result;
+  }
+
+  async getAudiencePreview(category: NotificationCategory): Promise<AudiencePreview> {
+    const result = await this.request<{ data: AudiencePreview } | AudiencePreview>(
+      `/api/shop-admin/notifications/audience-preview?category=${category}`
+    );
+    return 'data' in result ? result.data : result;
+  }
+
+  async getBroadcastQuota(): Promise<BroadcastQuota> {
+    const result = await this.request<{ data: BroadcastQuota } | BroadcastQuota>(
+      "/api/shop-admin/notifications/quota"
+    );
+    return 'data' in result ? result.data : result;
+  }
+
+  async getScheduledNotifications(status?: ScheduledStatus): Promise<ScheduledNotification[]> {
+    const queryString = status ? `?status=${status}` : "";
+    const result = await this.request<
+      { data: { scheduled: ScheduledNotification[] } } | { scheduled: ScheduledNotification[] }
+    >(`/api/shop-admin/notifications/scheduled${queryString}`);
+    const inner = 'data' in result ? result.data : result;
+    return inner.scheduled ?? [];
+  }
+
+  async cancelScheduledNotification(id: string): Promise<void> {
+    return this.request(`/api/shop-admin/notifications/scheduled/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ===========================
+  // WEEKLY PLAN ENDPOINTS
+  // ===========================
+
+  async listPlans(): Promise<WeeklyPlan[]> {
+    const result = await this.request<
+      { data: { plans?: WeeklyPlan[] } | WeeklyPlan[] } | { plans?: WeeklyPlan[] } | WeeklyPlan[]
+    >("/api/shop-admin/notifications/plans");
+    const unwrapped =
+      result && typeof result === "object" && "data" in result ? result.data : result;
+    if (Array.isArray(unwrapped)) return unwrapped;
+    if (unwrapped && typeof unwrapped === "object" && "plans" in unwrapped) {
+      return unwrapped.plans ?? [];
+    }
+    return [];
+  }
+
+  async createPlan(data: CreatePlanData): Promise<WeeklyPlan> {
+    const result = await this.request<{ data: WeeklyPlan } | WeeklyPlan>(
+      "/api/shop-admin/notifications/plans",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+    return 'data' in result ? result.data : result;
+  }
+
+  async updatePlan(id: string, data: UpdatePlanData): Promise<WeeklyPlan> {
+    const result = await this.request<{ data: WeeklyPlan } | WeeklyPlan>(
+      `/api/shop-admin/notifications/plans/${id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }
+    );
+    return 'data' in result ? result.data : result;
+  }
+
+  async deletePlan(id: string): Promise<void> {
+    return this.request(`/api/shop-admin/notifications/plans/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getPlanEntries(id: string): Promise<WeeklyPlanEntry[]> {
+    const result = await this.request<
+      { data: { entries: WeeklyPlanEntry[] } } | { entries: WeeklyPlanEntry[] }
+    >(`/api/shop-admin/notifications/plans/${id}/entries`);
+    const inner = 'data' in result ? result.data : result;
+    return inner.entries ?? [];
+  }
+
+  async savePlanEntries(id: string, entries: WeeklyPlanEntry[]): Promise<{ count: number }> {
+    const result = await this.request<{ data: { count: number } } | { count: number }>(
+      `/api/shop-admin/notifications/plans/${id}/entries`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ entries }),
+      }
     );
     return 'data' in result ? result.data : result;
   }

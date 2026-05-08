@@ -47,6 +47,7 @@ import type {
   NotificationType,
   NotificationStatus,
 } from "@/lib/types";
+import { ScheduledQueueList } from "./ScheduledQueueList";
 
 const getTypeColor = (type: NotificationType) => {
   switch (type) {
@@ -58,6 +59,10 @@ const getTypeColor = (type: NotificationType) => {
       return "bg-green-100 text-green-800";
     case "coupon_ready":
       return "bg-orange-100 text-orange-800";
+    case "daily_meal":
+      return "bg-amber-100 text-amber-800";
+    case "specials":
+      return "bg-pink-100 text-pink-800";
     default:
       return "bg-gray-100 text-gray-800";
   }
@@ -73,6 +78,8 @@ const getStatusColor = (status: NotificationStatus) => {
     case "failed":
     case "error":
       return "bg-red-100 text-red-800";
+    case "dry_run":
+      return "bg-yellow-200 text-yellow-900";
     default:
       return "bg-gray-100 text-gray-800";
   }
@@ -88,9 +95,18 @@ const formatNotificationType = (type: NotificationType) => {
       return "Points Earned";
     case "coupon_ready":
       return "Coupon Ready";
+    case "daily_meal":
+      return "Daily meal";
+    case "specials":
+      return "Special / promo";
     default:
       return type;
   }
+};
+
+const formatStatus = (status: NotificationStatus) => {
+  if (status === "dry_run") return "Test mode";
+  return status;
 };
 
 export function NotificationHistoryTable() {
@@ -155,7 +171,8 @@ export function NotificationHistoryTable() {
   const endIndex = Math.min(page * limit, total);
 
   return (
-    <>
+    <div className="space-y-6">
+      <ScheduledQueueList />
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -191,6 +208,8 @@ export function NotificationHistoryTable() {
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="manual">Manual Broadcast</SelectItem>
                 <SelectItem value="birthday">Birthday</SelectItem>
+                <SelectItem value="daily_meal">Daily meal</SelectItem>
+                <SelectItem value="specials">Special / promo</SelectItem>
                 <SelectItem value="points_earned">Points Earned</SelectItem>
                 <SelectItem value="coupon_ready">Coupon Ready</SelectItem>
               </SelectContent>
@@ -213,6 +232,7 @@ export function NotificationHistoryTable() {
                 <SelectItem value="delivered">Delivered</SelectItem>
                 <SelectItem value="failed">Failed</SelectItem>
                 <SelectItem value="error">Error</SelectItem>
+                <SelectItem value="dry_run">Test mode (not delivered)</SelectItem>
               </SelectContent>
             </Select>
 
@@ -271,8 +291,13 @@ export function NotificationHistoryTable() {
                           <Badge
                             variant="secondary"
                             className={getStatusColor(notification.status)}
+                            title={
+                              notification.status === "dry_run"
+                                ? "Recorded in test mode — backend delivery was disabled at send time."
+                                : undefined
+                            }
                           >
-                            {notification.status}
+                            {formatStatus(notification.status)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-gray-600">
@@ -404,6 +429,6 @@ export function NotificationHistoryTable() {
           )}
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

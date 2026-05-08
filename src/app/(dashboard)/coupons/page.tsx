@@ -159,7 +159,18 @@ export default function CouponsPage() {
                 {coupons.map((coupon) => (
                   <TableRow key={coupon.id}>
                     <TableCell className="font-medium">
-                      {coupon.name || "Untitled Coupon"}
+                      <div className="flex items-center gap-2">
+                        <span>{coupon.name || "Untitled Coupon"}</span>
+                        {coupon.is_birthday_only && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-pink-100 text-pink-800 hover:bg-pink-100"
+                            title="Only visible to customers on their birthday"
+                          >
+                            🎂 Birthday-only
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge className={getCouponTypeColor(coupon.type)}>

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bell, Send, Cake, History, BarChart3 } from "lucide-react";
 import { NotificationAnalyticsWidget } from "@/components/notifications/NotificationAnalyticsWidget";
 import { BroadcastNotificationForm } from "@/components/notifications/BroadcastNotificationForm";
+import { WeeklyPlanSection } from "@/components/notifications/WeeklyPlanSection";
 import { BirthdayTemplateForm } from "@/components/notifications/BirthdayTemplateForm";
 import { NotificationHistoryTable } from "@/components/notifications/NotificationHistoryTable";
 import { useCustomerType } from "@/hooks/useCustomerType";
@@ -65,6 +66,7 @@ export default function NotificationsPage() {
 
         <TabsContent value="send" className="space-y-6">
           <BroadcastNotificationForm />
+          <WeeklyPlanSection />
         </TabsContent>
 
         <TabsContent value="birthday" className="space-y-6">
